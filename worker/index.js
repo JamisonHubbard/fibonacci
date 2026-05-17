@@ -15,6 +15,8 @@ function fib(index) {
 
 // whenever a "message" is received in redis
 sub.on('message', (channel, message) => {
+  console.log('Redis recieved index: ' + message);
+
   // insert into a hash map called 'values'
   // key is 'message', value is the calculated fib value
   redisClient.hset('values', message, fib(parseInt(message)));

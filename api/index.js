@@ -17,13 +17,21 @@ const pgClient = new Pool({
   port: keys.pgPort,
   database: keys.pgDatabase,
   password: keys.pgPassword,
+  connectionTimeoutMillis: 3000,
 });
 pgClient.on('error', () => console.log('Lost PG Connection'));
 
-// setup 'values' postgres table
-pgClient
-  .query('CREATE TABLE IF NOT EXISTS values (number INT)')
-  .catch((err) => console.log(err));
+// setup 'values' postgres table with retry
+function createTable() {
+  pgClient
+    .query('CREATE TABLE IF NOT EXISTS values (number INT)')
+    .then(() => console.log('PG table created'))
+    .catch((err) => {
+      console.log('PG not ready, retrying in 2s...', err.message);
+      setTimeout(createTable, 2000);
+    });
+}
+createTable();
 
 // redis client setup
 const redis = require('redis');
@@ -52,6 +60,8 @@ app.get('/values/current', async (req, res) => {
 
 app.post('/values', async (req, res) => {
   const index = req.body.index;
+
+  console.log('API recieved index ' + index.toString());
 
   if (parseInt(index) > 40) {
     return res.status(422).send('index too high');
