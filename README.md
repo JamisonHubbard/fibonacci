@@ -10,11 +10,33 @@ This project presents a simple React UI for calculating Fibonacci numbers, as we
 > [!NOTE]
 > This is an incredibly contrived and over-complicated implementation of this use case. I have created this project primarily as a learning tool for Docker and containerization.
 
+## Get Started
+
+Run the following command:
+```
+docker-compose up
+```
+
 ## Architecture
 
-- `NGINX` container receives traffic, and routes it to either the `React App` for frontend requests, or the `Express Server` for backend/API requests
-- `React App` provides frontend content to users, and generates backend requests that are sent to the `Express Server`
-- `Express Server` receives requests and interacts with `Redis` to make requests for new Fibonacci values as well as retrieve and return calculated values, and also stores encountered indices in `Postgres`
-- `Redis` is a simple key-value store that emits **INSERT** events that are detected by the `Worker` service
-- `Worker` is a NodeJS service that detects **INSERT** events, pulls unprocessed values from `Redis`, calculates the Fibonacci numbers, then inserts the result into `Redis`
-- `Postgres` is a database where the `Express Server` records previously encountered indices
+- Docker Compose listens for traffic on port 3050, routes to `NGINX` port 80
+- `NGINX` service routes traffic and serves content
+  - Listens on port 80
+  - Routes / traffic to `Client`
+  - Routes /api traffic to `API`
+- `Client` is a React application that serves the UI
+  - Listens on port 3000
+  - Makes API requests to the `API`
+  - Receives Server-Side Events from the `API` to update the page
+- `API` is a NodeJS Express application that processes API requests
+  - Listens on port 5000
+  - stores new indices in `Redis`
+  - publishes "insert" events to `Redis`
+  - subscribes to "result" events from `Redis`, and publishes result to the frontend
+  - stores seen indices in `Postgres`
+- `Redis` key-value store used for caching and pub/sub
+- `Postgres` database used for simple storage
+- `Worker` is a simple NodeJS application that calculates fibonacci numbers
+  - subscribes to "insert" events from `Redis`
+  - retrieves inserted indices, caluclates fib numbers, and adds to `Redis`
+  - publishes a "result" event to `Redis`
