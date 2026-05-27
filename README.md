@@ -8,7 +8,7 @@ This project presents a simple React UI for calculating Fibonacci numbers, as we
 * An asynchronous Node.js worker process for calculating numbers
 
 > [!NOTE]
-> This is an incredibly contrived and over-complicated implementation of this use case. I have created this project primarily as a learning tool for Docker and containerization.
+> This is an incredibly contrived and over-complicated implementation of this use case. I have created this project primarily as a teaching tool for Docker and containerization.
 
 ## Get Started
 
